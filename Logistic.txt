@@ -1,0 +1,39 @@
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+def logistic_regression(X, y, lr=0.1, epochs=1000):
+    X_b = np.c_[np.ones((X.shape[0], 1)), X]  # Add bias
+    theta = np.zeros(X_b.shape[1])
+    
+    for epoch in range(epochs):
+        z = X_b @ theta
+        predictions = sigmoid(z)
+        gradient = X_b.T @ (predictions - y) / y.size
+        theta -= lr * gradient
+    return theta
+
+def predict_logr(X, theta):
+    X_b = np.c_[np.ones((X.shape[0], 1)), X]
+    return sigmoid(X_b @ theta)
+
+# Sample Data for Logistic Regression
+X_logr = np.array([[0], [1], [2], [3], [4], [5]])
+y_logr = np.array([0, 0, 0, 1, 1, 1])
+
+# Train
+theta_logr = logistic_regression(X_logr, y_logr)
+
+# Predict
+X_range = np.linspace(-1, 6, 100).reshape(-1,1)
+y_pred_logr = predict_logr(X_range, theta_logr)
+
+# Plot
+plt.figure(figsize=(8,5))
+plt.scatter(X_logr, y_logr, color="blue", label="Actual Points")
+plt.plot(X_range, y_pred_logr, color="red", label="Sigmoid Curve")
+plt.title("Logistic Regression (Sigmoid Curve)")
+plt.xlabel("X")
+plt.ylabel("Probability")
+plt.legend()
+plt.grid()
+plt.show()

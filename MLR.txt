@@ -1,29 +1,63 @@
-def multiple_linear_regression(X, y):
-    X_b = np.c_[np.ones((X.shape[0], 1)), X]  # Add bias term
-    theta_best = np.linalg.inv(X_b.T @ X_b) @ X_b.T @ y
-    return theta_best
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn.metrics import mean_squared_error, r2_score
 
-def predict_mlr(X, theta):
+def multiple_linear_regression(X, y):
+    X_b = np.c_[np.ones((X.shape[0], 1)), X]
+    theta = np.linalg.inv(X_b.T @ X_b) @ X_b.T @ y
+    return theta
+
+def predict(X, theta):
     X_b = np.c_[np.ones((X.shape[0], 1)), X]
     return X_b @ theta
 
-# Sample Data for MLR
-X_mlr = np.array([
-    [1, 2],
-    [2, 1],
-    [3, 4],
-    [4, 3],
-    [5, 5]
-])
-y_mlr = np.array([5, 6, 9, 8, 10])
+data = {
+    'X1': [1, 2, 3, 4, 5],
+    'X2': [2, 1, 4, 3, 5],
+    'X3': [3, 4, 2, 1, 5],
+    'X4': [4, 6, 8, 0, 3],
+    'Y': [10, 11, 14, 13, 16]
+}
 
-# Train
-theta_mlr = multiple_linear_regression(X_mlr, y_mlr)
+df = pd.DataFrame(data)
 
-# Predict
-y_pred_mlr = predict_mlr(X_mlr, theta_mlr)
+X = df[['X1', 'X2', 'X3', 'X4']].values
+y = df['Y'].values
 
-# 3D Plot
-fig = plt.figure(figsize=(10,7))
+theta = multiple_linear_regression(X, y)
+
+y_pred = predict(X, theta)
+
+accuracy = r2_score(y, y_pred)
+mse = mean_squared_error(y, y_pred)
+
+print(f"R² Score: {accuracy}")
+print(f"Mean Squared Error: {mse}")
+print("Theta (model parameters):", theta)
+
+X_new = np.array([[6, 6, 6, 6]])
+y_new_pred = predict(X_new, theta)
+
+print(f"Prediction for new input data {X_new}: {y_new_pred}")
+
+fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(X_mlr[:,0], X_mlr[:,1], y_mlr, color='blue', label="Actual Points")
+
+ax.scatter(df['X1'], df['X2'], df['Y'], color='blue', label='Actual')
+
+x_surf = np.linspace(df['X1'].min(), df['X1'].max(), 10)
+y_surf = np.linspace(df['X2'].min(), df['X2'].max(), 10)
+x_surf, y_surf = np.meshgrid(x_surf, y_surf)
+z_surf = theta[0] + theta[1]*x_surf + theta[2]*y_surf
+
+ax.plot_surface(x_surf, y_surf, z_surf, color='red', alpha=0.5)
+
+ax.set_xlabel('X1')
+ax.set_ylabel('X2')
+ax.set_zlabel('Y')
+ax.set_title('MLR 3D Plot')
+
+plt.legend()
+plt.show()

@@ -1,39 +1,55 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
-def logistic_regression(X, y, lr=0.1, epochs=1000):
-    X_b = np.c_[np.ones((X.shape[0], 1)), X]  # Add bias
-    theta = np.zeros(X_b.shape[1])
-    
-    for epoch in range(epochs):
-        z = X_b @ theta
-        predictions = sigmoid(z)
-        gradient = X_b.T @ (predictions - y) / y.size
-        theta -= lr * gradient
+def gradient_descent(X, y, theta, learning_rate, num_iterations):
+    m = len(y)
+    for _ in range(num_iterations):
+        predictions = sigmoid(X @ theta)
+        theta -= (learning_rate / m) * (X.T @ (predictions - y))
     return theta
 
-def predict_logr(X, theta):
-    X_b = np.c_[np.ones((X.shape[0], 1)), X]
-    return sigmoid(X_b @ theta)
+# Create a small custom DataFrame
+data = {
+    'Age': [22, 24, 28, 30, 32, 35, 40, 45, 50, 55],
+    'Years_with_company': [1, 2, 3, 2, 4, 5, 10, 12, 15, 18],
+    'Churn': [0, 0, 1, 0, 1, 1, 0, 0, 1, 1]
+}
 
-# Sample Data for Logistic Regression
-X_logr = np.array([[0], [1], [2], [3], [4], [5]])
-y_logr = np.array([0, 0, 0, 1, 1, 1])
+df = pd.DataFrame(data)
 
-# Train
-theta_logr = logistic_regression(X_logr, y_logr)
+X = df[['Age', 'Years_with_company']].values
+y = df['Churn'].values
 
-# Predict
-X_range = np.linspace(-1, 6, 100).reshape(-1,1)
-y_pred_logr = predict_logr(X_range, theta_logr)
+X = np.c_[np.ones(X.shape[0]), X]
 
-# Plot
-plt.figure(figsize=(8,5))
-plt.scatter(X_logr, y_logr, color="blue", label="Actual Points")
-plt.plot(X_range, y_pred_logr, color="red", label="Sigmoid Curve")
-plt.title("Logistic Regression (Sigmoid Curve)")
-plt.xlabel("X")
-plt.ylabel("Probability")
-plt.legend()
-plt.grid()
+theta = np.zeros(X.shape[1])
+learning_rate = 0.1
+num_iterations = 1000
+
+theta = gradient_descent(X, y, theta, learning_rate, num_iterations)
+
+# Plot Sigmoid curve
+x_values = np.linspace(-10, 10, 100)
+y_values = sigmoid(x_values)
+plt.plot(x_values, y_values, color='red')
+plt.title('Sigmoid Curve')
+plt.xlabel('z')
+plt.ylabel('Sigmoid(z)')
+plt.grid(True)
 plt.show()
+
+# New customer for prediction
+new_customer = np.array([0,22, 1])  # Bias=1, Age=28, Years=3
+z = new_customer @ theta
+predicted_prob = sigmoid(z)
+
+print(f"Predicted probability of churn for new customer: {predicted_prob:.4f}")
+
+if predicted_prob >= 0.5:
+    print("Prediction: Churn")
+else:
+    print("Prediction: No Churn")

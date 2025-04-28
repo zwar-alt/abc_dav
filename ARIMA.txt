@@ -1,0 +1,38 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from statsmodels.tsa.arima.model import ARIMA
+
+# Sample time series data (you can replace this with your own dataset)
+data = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]  # Simple data
+index = pd.date_range(start='2020-01-01', periods=len(data), freq='D')  # Dates for the data
+
+# Create a DataFrame
+df = pd.DataFrame(data, columns=['Value'], index=index)
+
+print(df)
+# Plot the original data
+df.plot(figsize=(10, 6))
+plt.title('Original Time Series')
+plt.show()
+
+# Fit ARIMA model (order: p=1, d=1, q=1)
+model = ARIMA(df['Value'], order=(1, 1, 1))  # (p, d, q)
+fitted_model = model.fit()
+
+# Print model summary
+print(fitted_model.summary())
+
+# Forecast the next 3 data points
+forecast = fitted_model.forecast(steps=3)
+
+# Print forecast
+print('Forecasted values:', forecast)
+
+# Plot the forecast
+plt.figure(figsize=(10, 6))
+plt.plot(df.index, df['Value'], label='Original Series')
+plt.plot( forecast, label='Forecast', color='red')
+plt.title('ARIMA Model Forecast')
+plt.legend()
+plt.show()
